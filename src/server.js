@@ -1,7 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const apiRoutes = require("./routes/api");
-const HttpError = require("./utils/HttpError");
+const { HttpError } = require("./utils/HttpError");
 
 
 mongoose.connect("mongodb://mongo:27017/mydb");

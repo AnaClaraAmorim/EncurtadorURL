@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 const Link = require('../models/link');
-const HttpError = require('../utils/HttpError');
+const { HttpError, ErrorEnum } = require("../utils/HttpError");
 
 module.exports.createShortLink = async function(originalUrl, alias, singleUse = false, expiresIn = null) {
     let expiresAt = null;
@@ -12,16 +12,16 @@ module.exports.createShortLink = async function(originalUrl, alias, singleUse = 
     let shortUrl = alias;
 
     if (!originalUrl || originalUrl.trim() === '') {
-        throw new HttpError("URL_NOT_FOUND");
+        throw new HttpError(ErrorEnum.URL_NOT_FOUND);
     }
     
     if (alias) {
         const existingLink = await Link.findOne({ shortUrl: alias });
         if (existingLink) {
-            throw new HttpError("ALIAS_ALREADY_EXISTS");
+            throw new HttpError(ErrorEnum.ALIAS_ALREADY_EXISTS);
         }
         else if (alias.length < 4 || alias.length > 10) {
-            throw new HttpError("ALIAS_WRONG_LENGTH");
+            throw new HttpError(ErrorEnum.ALIAS_WRONG_LENGTH);
         }
     } else {
         do {

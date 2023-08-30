@@ -5,7 +5,7 @@ const Link = require("../models/link");
 const Log = require("../models/log");
 const authentication = require("../middlewares/authentication");
 const { mergeQueryParameters } = require("../utils/urlUtils");
-const HttpError = require("../utils/HttpError");
+const { HttpError, ErrorEnum } = require("../utils/HttpError");
 
 const jwt = require("jsonwebtoken");
 
@@ -37,15 +37,15 @@ router.get("/:shortUrl", async (req, res, next) => {
     const link = await Link.findOne({ shortUrl });
 
     if (!link) {
-        throw new HttpError("LINK_NOT_FOUND");
+        throw new HttpError(ErrorEnum.LINK_NOT_FOUND);
     }
 
     if (link.expiresAt && new Date() > link.expiresAt) {
-        throw new HttpError("LINK_EXPIRED");
+        throw new HttpError(ErrorEnum.LINK_EXPIRED);
     }
 
     if (link.singleUse && link.used) {
-        throw new HttpError("LINK_USED");
+        throw new HttpError(ErrorEnum.LINK_USED);
     }
 
     const log = new Log({
@@ -77,17 +77,17 @@ router.delete("/:shortUrl", async (req, res, next) => {
     try {
       decodedToken = jwt.verify(token, JWT_SECRET);
     } catch (error) {
-      throw new HttpError("INVALID_TOKEN");
+      throw new HttpError(ErrorEnum.INVALID_TOKEN);
     }
 
     if (decodedToken.uniqueLinkID !== req.params.shortUrl) {
-      throw new HttpError("UNAUTHORIZED_TO_DELETE");
+      throw new HttpError(ErrorEnum.UNAUTHORIZED_TO_DELETE);
     }
 
     const linkToDelete = await Link.findOne({ shortUrl: req.params.shortUrl });
 
     if (!linkToDelete) {
-      throw new HttpError("LINK_NOT_FOUND");
+      throw new HttpError(ErrorEnum.LINK_NOT_FOUND);
     }
 
     await Link.deleteOne({ _id: linkToDelete._id });
@@ -103,7 +103,7 @@ router.get("/:shortUrl/logs", authentication, async (req, res, next) => {
 
     const link = await Link.findOne({ shortUrl });
     if (!link) {
-      throw new HttpError("LINK_NOT_FOUND");
+      throw new HttpError(ErrorEnum.LINK_NOT_FOUND);
     }
 
     const logs = await Log.find({ shortUrl });
